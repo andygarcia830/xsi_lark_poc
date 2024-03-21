@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Attendance",
+  "enabled": 1,
+  "modified": "2024-03-21 14:43:24.592695",
+  "module": "XSI Lark PoC",
+  "name": "Import Attendance From Lark",
+  "script": "frappe.ui.form.on('Attendance', {\n\trefresh(frm) {\n\t\tfrm.add_custom_button(\n            __('Import From Lark'),function(){\n\n                frappe.call({method:'xsi_lark_poc.xsi_lark_poc.util.lark_attendance.fetch_entries', args:{\n                    employee:frm.doc.employee,\n                    date:frm.doc.attendance_date\n                },\n                callback:function(r){\n                    console.log(r.message);\n                    frm.doc.status=r.message\n                    frm.refresh_field('status');\n                }\n                });\n                \n        }\n\t)}\n});",
+  "view": "Form"
+ }
+]
