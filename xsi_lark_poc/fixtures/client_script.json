@@ -4,10 +4,21 @@
   "doctype": "Client Script",
   "dt": "Attendance",
   "enabled": 1,
-  "modified": "2024-03-21 14:43:24.592695",
+  "modified": "2024-03-21 15:55:19.544839",
   "module": "XSI Lark PoC",
   "name": "Import Attendance From Lark",
-  "script": "frappe.ui.form.on('Attendance', {\n\trefresh(frm) {\n\t\tfrm.add_custom_button(\n            __('Import From Lark'),function(){\n\n                frappe.call({method:'xsi_lark_poc.xsi_lark_poc.util.lark_attendance.fetch_entries', args:{\n                    employee:frm.doc.employee,\n                    date:frm.doc.attendance_date\n                },\n                callback:function(r){\n                    console.log(r.message);\n                    frm.doc.status=r.message\n                    frm.refresh_field('status');\n                }\n                });\n                \n        }\n\t)}\n});",
+  "script": "frappe.ui.form.on('Attendance', {\n\trefresh(frm) {\n\t\tfrm.add_custom_button(\n            __('Import From Lark'),function(){\n\n                frappe.call({method:'xsi_lark_poc.xsi_lark_poc.util.lark_attendance.fetch_entries', args:{\n                    employee:frm.doc.employee,\n                    date:frm.doc.attendance_date\n                },\n                callback:function(r){\n                    console.log(r.message);\n                    frm.doc.status=r.message\n                    frm.refresh_field('status');\n                    if (frm.doc.status == 'On Leave'){\n                        frm.doc.leave_type='Sick Leave'\n                        frm.refresh_field('leave_type');\n                    }\n                }\n                });\n                \n        }\n\t)}\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Employee Attendance Tool",
+  "enabled": 1,
+  "modified": "2024-03-21 16:20:29.693335",
+  "module": "XSI Lark PoC",
+  "name": "Import From Lark To Employee Attendance Tool",
+  "script": "frappe.ui.form.on('Employee Attendance Tool', {\n\trefresh(frm) {\n\t\tfrm.add_custom_button(\n            __('Import From Lark'),function(){\n\n                frappe.call({method:'xsi_lark_poc.xsi_lark_poc.util.lark_attendance.batch_fetch_entries', args:{\n                    date:frm.doc.date\n                },\n                callback:function(r){\n                    console.log(r.message);\n                    frm.doc.status=r.message\n                    // frm.refresh_field('status');\n                    // if (frm.doc.status == 'On Leave'){\n                    //     frm.doc.leave_type='Sick Leave'\n                    //     frm.refresh_field('leave_type');\n                    // }\n                }\n                });\n                \n        }\n\t)}\n});",
   "view": "Form"
  }
 ]

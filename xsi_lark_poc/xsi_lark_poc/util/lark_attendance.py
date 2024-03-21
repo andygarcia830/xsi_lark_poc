@@ -54,3 +54,23 @@ def fetch_entries(employee, date):
     print(f'LARK_ID {employee.custom_lark_user_id}')
     print(date.replace('-',''))
     return fetch_employee_record(employee.custom_lark_user_id, date.replace('-',''))
+
+
+
+@frappe.whitelist()
+def batch_fetch_entries(date):
+    employees = frappe.db.get_list('Employee', fields=['name', 'custom_lark_user_id'])
+    
+    for employee in employees:
+        print(f'LARK_ID {employee.custom_lark_user_id}')
+        print(date.replace('-',''))
+        result = fetch_employee_record(employee.custom_lark_user_id, date.replace('-',''))
+        attendance = frappe.new_doc('Attendance')
+        attendance.employee = employee.name
+        attendance.attendance_date = date
+        attendance.status = result
+        if result == 'On Leave':
+            attendance.leave_type = 'Sick Leave'
+        attendance.save()
+        attendance.submit()
+
