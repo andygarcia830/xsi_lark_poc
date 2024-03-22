@@ -71,6 +71,7 @@ def batch_fetch_entries(date):
         attendance.status = result
         if result == 'On Leave':
             attendance.leave_type = 'Sick Leave'
-        attendance.save()
-        attendance.submit()
+        if not attendance.status == None:
+            attendance.save()
+            attendance.submit()
 
