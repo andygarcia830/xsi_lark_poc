@@ -227,4 +227,7 @@ app_license = "mit"
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
-fixtures = [{"doctype": "Client Script", "filters": [["module" , "in" , ("XSI Lark PoC" )]]}]
+fixtures = [{"doctype": "Client Script", "filters": [["module" , "in" , ("XSI Lark PoC" )]]},
+            
+             {"doctype": "Leave Type", "filters": [["name" , "in" , ("Lactation Break", "Funeral Leave", "Maternity Leave", "Paternity Leave", "Marital Leave", "Compensatory Leave", "Annual Leave", "Personal Leave" )]]}
+             ]
