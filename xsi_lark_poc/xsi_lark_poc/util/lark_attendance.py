@@ -77,7 +77,7 @@ def fetch_employee_id(employee):
         endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
         access_token = fetch_token()
         headers={'Authorization':'Bearer '+access_token,'Content-Type':'application/JSON'}
-        body = {'emails':[employee.company_email]
+        body = {'emails':[employee.company_email], 'include_resigned': 'true'
                 }
         jsonStr = json.dumps(body)
         x = requests.post(endpoint, headers=headers, data = jsonStr)
@@ -98,7 +98,7 @@ def fetch_employee_id(employee):
         endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
         access_token = fetch_token()
         headers={'Authorization':'Bearer '+access_token,'Content-Type':'application/JSON'}
-        body = {'mobiles':[employee.cell_number]
+        body = {'mobiles':[employee.cell_number], 'include_resigned': 'true'
                 }
         jsonStr = json.dumps(body)
         x = requests.post(endpoint, headers=headers, data = jsonStr)
@@ -142,6 +142,7 @@ def batch_fetch_entries(date):
                 emp = frappe.get_doc('Employee', employee.name)
                 emp.custom_lark_user_id = employee.custom_lark_user_id
                 emp.save()
+                frappe.db.commit()
 
         if employee.custom_lark_user_id:
             result = fetch_employee_record(employee.custom_lark_user_id, date.replace('-',''))
@@ -160,6 +161,10 @@ def batch_fetch_entries(date):
             else:
                 attendance.status = result
             if not attendance.status == None:
-                attendance.save()
-                attendance.submit()
+                try:
+                    attendance.save()
+                    attendance.submit()
+                except:
+                    pass
+                # frappe.db.commit()
 
