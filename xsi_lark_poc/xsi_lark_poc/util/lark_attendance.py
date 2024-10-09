@@ -72,12 +72,13 @@ def fetch_employee_record(custom_lark_user_id, date):
     except:
         return 'Present'
 
-def fetch_employee_id(employee):
-    if employee.company_email:
+@frappe.whitelist()
+def fetch_employee_id(cell_number, company_email):
+    if company_email:
         endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
         access_token = fetch_token()
         headers={'Authorization':'Bearer '+access_token,'Content-Type':'application/JSON'}
-        body = {'emails':[employee.company_email], 'include_resigned': 'true'
+        body = {'emails':[company_email], 'include_resigned': 'true'
                 }
         jsonStr = json.dumps(body)
         x = requests.post(endpoint, headers=headers, data = jsonStr)
@@ -94,11 +95,11 @@ def fetch_employee_id(employee):
         except:
             print('Exception')
         
-    if employee.cell_number:
+    if cell_number:
         endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
         access_token = fetch_token()
         headers={'Authorization':'Bearer '+access_token,'Content-Type':'application/JSON'}
-        body = {'mobiles':[employee.cell_number], 'include_resigned': 'true'
+        body = {'mobiles':[cell_number], 'include_resigned': 'true'
                 }
         jsonStr = json.dumps(body)
         x = requests.post(endpoint, headers=headers, data = jsonStr)
@@ -137,7 +138,7 @@ def batch_fetch_entries(date):
         print(f'LARK_ID {employee.name} {employee.custom_lark_user_id}')
         print(date.replace('-',''))
         if (employee.custom_lark_user_id == None) or (len(employee.custom_lark_user_id) == 0):
-            employee.custom_lark_user_id = fetch_employee_id(employee)
+            employee.custom_lark_user_id = fetch_employee_id(employee.cell_number, employee.company_email)
             if (employee.custom_lark_user_id != None) and (len(employee.custom_lark_user_id) > 0):
                 emp = frappe.get_doc('Employee', employee.name)
                 emp.custom_lark_user_id = employee.custom_lark_user_id
