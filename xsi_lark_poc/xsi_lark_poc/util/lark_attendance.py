@@ -72,6 +72,50 @@ def fetch_employee_record(custom_lark_user_id, date):
     except:
         return 'Present'
 
+def fetch_employee_id(employee):
+    if employee.company_email:
+        endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
+        access_token = fetch_token()
+        headers={'Authorization':'Bearer '+access_token,'Content-Type':'application/JSON'}
+        body = {'emails':[employee.company_email]
+                }
+        jsonStr = json.dumps(body)
+        x = requests.post(endpoint, headers=headers, data = jsonStr)
+        resp = json.loads(x.text)
+        print(f'RESP EMAIL {resp}')
+        try:
+            results = resp['data']['user_list']
+            print (f'USER ID RESPONSE {results}')
+            if len(results) > 0:
+                for item in results:
+                    record = item['user_id']
+                    print (f'RECORDS {record}')
+                    return record
+        except:
+            print('Exception')
+        
+    if employee.cell_number:
+        endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
+        access_token = fetch_token()
+        headers={'Authorization':'Bearer '+access_token,'Content-Type':'application/JSON'}
+        body = {'mobiles':[employee.cell_number]
+                }
+        jsonStr = json.dumps(body)
+        x = requests.post(endpoint, headers=headers, data = jsonStr)
+        resp = json.loads(x.text)
+        print(f'RESP MOBILE {resp}')
+        try:
+            results = resp['data']['user_list']
+            print (f'USER ID RESPONSE {results}')
+            if len(results) > 0:
+                for item in results:
+                    record = item['user_id']
+                    print (f'RECORDS {record}')
+                    return record
+        except:
+            pass
+    return None
+
 
 
 
@@ -87,27 +131,35 @@ def fetch_entries(employee, date):
 
 @frappe.whitelist()
 def batch_fetch_entries(date):
-    employees = frappe.db.get_list('Employee', fields=['name', 'custom_lark_user_id'])
+    employees = frappe.db.get_list('Employee', filters={'status': 'Active'}, fields=['name', 'custom_lark_user_id', 'company_email', 'cell_number'])
     
     for employee in employees:
-        print(f'LARK_ID {employee.custom_lark_user_id}')
+        print(f'LARK_ID {employee.name} {employee.custom_lark_user_id}')
         print(date.replace('-',''))
-        result = fetch_employee_record(employee.custom_lark_user_id, date.replace('-',''))
-        attendance = frappe.new_doc('Attendance')
-        attendance.employee = employee.name
-        attendance.attendance_date = date
-        if result.lower().find('leave') > 0:
-            attendance.status = 'On Leave'
-            attendance.leave_type = result
-            # leave = frappe.new_doc('Leave Application')
-            # leave.leave_type = result
-            # leave.employee = employee.name
-            # leave.from_date = date
-            # leave.to_date = date
+        if (employee.custom_lark_user_id == None) or (len(employee.custom_lark_user_id) == 0):
+            employee.custom_lark_user_id = fetch_employee_id(employee)
+            if (employee.custom_lark_user_id != None) and (len(employee.custom_lark_user_id) > 0):
+                emp = frappe.get_doc('Employee', employee.name)
+                emp.custom_lark_user_id = employee.custom_lark_user_id
+                emp.save()
 
-        else:
-            attendance.status = result
-        if not attendance.status == None:
-            attendance.save()
-            attendance.submit()
+        if employee.custom_lark_user_id:
+            result = fetch_employee_record(employee.custom_lark_user_id, date.replace('-',''))
+            attendance = frappe.new_doc('Attendance')
+            attendance.employee = employee.name
+            attendance.attendance_date = date
+            if result.lower().find('leave') > 0:
+                attendance.status = 'On Leave'
+                attendance.leave_type = result
+                # leave = frappe.new_doc('Leave Application')
+                # leave.leave_type = result
+                # leave.employee = employee.name
+                # leave.from_date = date
+                # leave.to_date = date
+
+            else:
+                attendance.status = result
+            if not attendance.status == None:
+                attendance.save()
+                attendance.submit()
 
