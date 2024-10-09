@@ -6,7 +6,7 @@ from frappe.model.document import Document
 
 def fetch_token():
     lark_settings = frappe.get_doc('Lark Integration Settings')
-    print(lark_settings.app_id)
+    # print(lark_settings.app_id)
     body = {'app_id':lark_settings.app_id,'app_secret':lark_settings.app_secret}
     jsonStr = json.dumps(body)
     endpoint = 'https://open.larksuite.com/open-apis/auth/v3/app_access_token/internal'
@@ -58,14 +58,14 @@ def fetch_employee_record(custom_lark_user_id, date):
     jsonStr = json.dumps(body)
     x = requests.post(endpoint, headers=headers, data = jsonStr)
     resp = json.loads(x.text)
-    print(f'RESP {resp}')
+    # print(f'RESP {resp}')
     try:
         results = resp['data']['user_approvals']
-        print (f'ATTENDANCE RESPONSE {results}')
+        # print (f'ATTENDANCE RESPONSE {results}')
         if len(results) > 0:
             for item in results:
                 record = item['leaves'][0]['i18n_names']['en']
-                print (f'RECORDS {record}')
+                # print (f'RECORDS {record}')
                 return record
         else:
             return 'Present'
@@ -83,14 +83,14 @@ def fetch_employee_id(cell_number=None, company_email=None, silent = False):
         jsonStr = json.dumps(body)
         x = requests.post(endpoint, headers=headers, data = jsonStr)
         resp = json.loads(x.text)
-        print(f'RESP EMAIL {resp}')
+        # print(f'RESP EMAIL {resp}')
         try:
             results = resp['data']['user_list']
-            print (f'USER ID RESPONSE {results}')
+            # print (f'USER ID RESPONSE {results}')
             if len(results) > 0:
                 for item in results:
                     record = item['user_id']
-                    print (f'RECORDS {record}')
+                    # print (f'RECORDS {record}')
                     return record
         except:
             print('Exception')
@@ -104,14 +104,14 @@ def fetch_employee_id(cell_number=None, company_email=None, silent = False):
         jsonStr = json.dumps(body)
         x = requests.post(endpoint, headers=headers, data = jsonStr)
         resp = json.loads(x.text)
-        print(f'RESP MOBILE {resp}')
+        # print(f'RESP MOBILE {resp}')
         try:
             results = resp['data']['user_list']
-            print (f'USER ID RESPONSE {results}')
+            # print (f'USER ID RESPONSE {results}')
             if len(results) > 0:
                 for item in results:
                     record = item['user_id']
-                    print (f'RECORDS {record}')
+                    # print (f'RECORDS {record}')
                     return record
         except:
             pass
@@ -126,7 +126,7 @@ def fetch_employee_id(cell_number=None, company_email=None, silent = False):
 def fetch_entries(employee, date):
     employee = frappe.get_doc('Employee', employee, fields=['name', 'custom_lark_user_id'])
     
-    print(f'LARK_ID {employee.custom_lark_user_id}')
+    # print(f'LARK_ID {employee.custom_lark_user_id}')
     print(date.replace('-',''))
     return fetch_employee_record(employee.custom_lark_user_id, date.replace('-',''))
 
@@ -137,8 +137,8 @@ def batch_fetch_entries(date):
     employees = frappe.db.get_list('Employee', filters={'status': 'Active'}, fields=['name', 'custom_lark_user_id', 'company_email', 'cell_number'])
     
     for employee in employees:
-        print(f'LARK_ID {employee.name} {employee.custom_lark_user_id}')
-        print(date.replace('-',''))
+        # print(f'LARK_ID {employee.name} {employee.custom_lark_user_id}')
+        # print(date.replace('-',''))
         if (employee.custom_lark_user_id == None) or (len(employee.custom_lark_user_id) == 0):
             employee.custom_lark_user_id = fetch_employee_id(employee.cell_number, employee.company_email, silent = True)
             if (employee.custom_lark_user_id != None) and (len(employee.custom_lark_user_id) > 0):
