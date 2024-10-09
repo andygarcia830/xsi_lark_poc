@@ -73,7 +73,7 @@ def fetch_employee_record(custom_lark_user_id, date):
         return 'Present'
 
 @frappe.whitelist()
-def fetch_employee_id(cell_number=None, company_email=None):
+def fetch_employee_id(cell_number=None, company_email=None, silent = False):
     if company_email:
         endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
         access_token = fetch_token()
@@ -115,6 +115,8 @@ def fetch_employee_id(cell_number=None, company_email=None):
                     return record
         except:
             pass
+    if not silent:
+        frappe.msgprint('Lark User ID Not Found. Check Employee\'s Mobile and/or Copany Email if it\'s registered with your Lark account.')
     return None
 
 
@@ -138,7 +140,7 @@ def batch_fetch_entries(date):
         print(f'LARK_ID {employee.name} {employee.custom_lark_user_id}')
         print(date.replace('-',''))
         if (employee.custom_lark_user_id == None) or (len(employee.custom_lark_user_id) == 0):
-            employee.custom_lark_user_id = fetch_employee_id(employee.cell_number, employee.company_email)
+            employee.custom_lark_user_id = fetch_employee_id(employee.cell_number, employee.company_email, silent = True)
             if (employee.custom_lark_user_id != None) and (len(employee.custom_lark_user_id) > 0):
                 emp = frappe.get_doc('Employee', employee.name)
                 emp.custom_lark_user_id = employee.custom_lark_user_id
@@ -168,4 +170,5 @@ def batch_fetch_entries(date):
                 except:
                     pass
                 # frappe.db.commit()
+    frappe.msgprint('Done Generating Attendance Entries')
 
