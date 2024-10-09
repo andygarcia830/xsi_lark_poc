@@ -73,7 +73,7 @@ def fetch_employee_record(custom_lark_user_id, date):
         return 'Present'
 
 @frappe.whitelist()
-def fetch_employee_id(cell_number, company_email):
+def fetch_employee_id(cell_number=None, company_email=None):
     if company_email:
         endpoint = 'https://open.larksuite.com/open-apis/contact/v3/users/batch_get_id?user_id_type=user_id'
         access_token = fetch_token()
